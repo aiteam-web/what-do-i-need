@@ -408,7 +408,7 @@ const WhatDoINeedActivity = () => {
                     </div>
                     <MicroAcknowledgement message="✨ That makes sense." show={selectedNeeds.length > 0} />
                     {selectedNeeds.length > 0 && (
-                      <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
+                      <motion.div {...fadeUp} transition={{ delay: 0.2 }} className="w-full">
                         <button onClick={goToPrioritize} className="btn-primary">
                           Continue →
                         </button>
@@ -450,7 +450,7 @@ const WhatDoINeedActivity = () => {
                       <p className="text-lg font-semibold text-foreground">{primaryNeed}</p>
                     </motion.div>
                     <MicroAcknowledgement message="🌱 Let's explore this a bit more." show />
-                    <button onClick={goToScreen3} className="btn-primary mt-4">
+                    <button onClick={goToScreen3} className="btn-primary mt-4 w-full">
                       Continue →
                     </button>
                   </motion.div>
@@ -485,7 +485,7 @@ const WhatDoINeedActivity = () => {
                     />
                     <MicroAcknowledgement message="💫 That's a meaningful insight." show={reflection.length > 10} />
                     {reflection.trim() && (
-                      <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+                      <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="w-full">
                         <button onClick={goToAction} className="btn-primary">
                           Continue →
                         </button>
@@ -519,7 +519,7 @@ const WhatDoINeedActivity = () => {
                       className="input-calm !rounded-full !py-3 !text-sm"
                     />
                     {(selectedAction || customAction.trim()) && (
-                      <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+                      <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="w-full">
                         <button onClick={goToClosing} className="btn-primary">
                           Continue →
                         </button>

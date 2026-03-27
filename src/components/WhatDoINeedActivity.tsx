@@ -485,7 +485,7 @@ const WhatDoINeedActivity = () => {
                     />
                     <MicroAcknowledgement message="💫 That's a meaningful insight." show={reflection.length > 10} />
                     {reflection.trim() && (
-                      <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+                      <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="w-full">
                         <button onClick={goToAction} className="btn-primary">
                           Continue →
                         </button>
@@ -519,7 +519,7 @@ const WhatDoINeedActivity = () => {
                       className="input-calm !rounded-full !py-3 !text-sm"
                     />
                     {(selectedAction || customAction.trim()) && (
-                      <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+                      <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="w-full">
                         <button onClick={goToClosing} className="btn-primary">
                           Continue →
                         </button>

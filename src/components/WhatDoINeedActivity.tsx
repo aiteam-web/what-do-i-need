@@ -450,7 +450,7 @@ const WhatDoINeedActivity = () => {
                       <p className="text-lg font-semibold text-foreground">{primaryNeed}</p>
                     </motion.div>
                     <MicroAcknowledgement message="🌱 Let's explore this a bit more." show />
-                    <button onClick={goToScreen3} className="btn-primary mt-4">
+                    <button onClick={goToScreen3} className="btn-primary mt-4 w-full">
                       Continue →
                     </button>
                   </motion.div>

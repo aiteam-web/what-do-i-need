@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Clock } from "lucide-react";
+import { ChevronLeft, Clock, X } from "lucide-react";
 import ProgressDots from "@/components/ProgressDots";
 import NeedChip from "@/components/NeedChip";
 import MicroAcknowledgement from "@/components/MicroAcknowledgement";
@@ -32,6 +32,60 @@ const PROMPTS: Record<string, string> = {
   "Clarity about the relationship": "🔍 What kind of clarity would help you most?",
 };
 
+const REFLECTION_HINTS: Record<string, string[]> = {
+  "Clear communication": [
+    "I wish I could say...",
+    "If they really listened, I'd tell them...",
+    "Communication feels hard when...",
+  ],
+  "Emotional support": [
+    "I just need someone to...",
+    "It would help if...",
+    "What I really want is...",
+  ],
+  "Space / time for myself": [
+    "I'd use that time to...",
+    "Space would let me...",
+    "I need room to...",
+  ],
+  "Reassurance": [
+    "I need to hear that...",
+    "It would calm me to know...",
+    "I keep worrying that...",
+  ],
+  "Understanding": [
+    "I wish people knew that...",
+    "What I'm really feeling is...",
+    "Nobody sees that I...",
+  ],
+  "Stability": [
+    "I need things to feel...",
+    "What would ground me is...",
+    "Stability means...",
+  ],
+  "Honesty": [
+    "The truth I need to face is...",
+    "I want to be honest about...",
+    "What's really going on is...",
+  ],
+  "Respect": [
+    "I deserve to be treated...",
+    "Respect would look like...",
+    "I need people to...",
+  ],
+  "Clarity about the relationship": [
+    "I need to know if...",
+    "What confuses me is...",
+    "I want us to be clear about...",
+  ],
+};
+
+const DEFAULT_HINTS = [
+  "What comes to mind is...",
+  "Right now I feel...",
+  "If I'm honest with myself...",
+];
+
 const ACTION_CHIPS = [
   { label: "Say something honestly", emoji: "🗣️" },
   { label: "Take some time for myself", emoji: "🧘" },
@@ -52,6 +106,14 @@ const fadeUp = {
   exit: { opacity: 0, y: -8 },
 };
 
+interface SavedReflection {
+  date: string;
+  primaryNeed: string;
+  emoji: string;
+  reflection: string;
+  action: string;
+}
+
 const WhatDoINeedActivity = () => {
   const [screen, setScreen] = useState(1);
   const [selectedNeeds, setSelectedNeeds] = useState<string[]>([]);
@@ -63,6 +125,27 @@ const WhatDoINeedActivity = () => {
   const [customAction, setCustomAction] = useState("");
   const [step3Phase, setStep3Phase] = useState<"reflect" | "action" | "closing">("reflect");
   const [saved, setSaved] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<SavedReflection[]>([]);
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+
+  // Rotating placeholder
+  const hints = REFLECTION_HINTS[primaryNeed] || DEFAULT_HINTS;
+  useEffect(() => {
+    if (step3Phase !== "reflect") return;
+    const interval = setInterval(() => {
+      setPlaceholderIdx((i) => (i + 1) % hints.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [step3Phase, hints.length]);
+
+  // Load history
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("needs-history");
+      if (stored) setHistory(JSON.parse(stored));
+    } catch {}
+  }, []);
 
   const toggleNeed = useCallback((need: string) => {
     setSelectedNeeds((prev) =>
@@ -86,10 +169,25 @@ const WhatDoINeedActivity = () => {
   const goToScreen3 = () => {
     setScreen(3);
     setStep3Phase("reflect");
+    setPlaceholderIdx(0);
   };
 
   const goToAction = () => setStep3Phase("action");
   const goToClosing = () => setStep3Phase("closing");
+
+  const handleSave = () => {
+    const entry: SavedReflection = {
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      primaryNeed,
+      emoji: NEED_EMOJI_MAP[primaryNeed] || "🌱",
+      reflection,
+      action: selectedAction || customAction,
+    };
+    const updated = [entry, ...history].slice(0, 20);
+    setHistory(updated);
+    localStorage.setItem("needs-history", JSON.stringify(updated));
+    setSaved(true);
+  };
 
   const handleFinish = () => {
     setScreen(1);
@@ -105,7 +203,7 @@ const WhatDoINeedActivity = () => {
   };
 
   const handleBack = () => {
-    if (screen === 1) return; // exits activity — parent handles
+    if (screen === 1) return;
     if (screen === 2) {
       if (step2Phase === "focus") setStep2Phase("prioritize");
       else if (step2Phase === "prioritize") setStep2Phase("select");
@@ -121,22 +219,27 @@ const WhatDoINeedActivity = () => {
   const primaryEmoji = NEED_EMOJI_MAP[primaryNeed] || "🌱";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen max-w-md mx-auto flex flex-col relative overflow-hidden">
+      {/* Gradient background */}
+      <div className="fixed inset-0 -z-10" style={{
+        background: `linear-gradient(160deg, hsl(30 25% 96%) 0%, hsl(262 35% 94%) 40%, hsl(207 40% 93%) 70%, hsl(30 25% 96%) 100%)`
+      }} />
+      <div className="fixed top-20 -right-20 w-64 h-64 rounded-full -z-10 opacity-30" 
+        style={{ background: `radial-gradient(circle, hsl(262 30% 80%) 0%, transparent 70%)` }} />
+      <div className="fixed bottom-20 -left-20 w-48 h-48 rounded-full -z-10 opacity-20" 
+        style={{ background: `radial-gradient(circle, hsl(207 35% 78%) 0%, transparent 70%)` }} />
+
       {/* Top Bar */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        {/* Back button — always visible */}
         <button
-          onClick={screen === 1 ? () => { /* exit activity */ } : handleBack}
+          onClick={screen === 1 ? () => {} : handleBack}
           className="top-icon-btn -ml-2"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-
         <ProgressDots current={screen} total={3} />
-
-        {/* History icon on screen 1, spacer otherwise */}
         {screen === 1 ? (
-          <button className="top-icon-btn -mr-2" title="Past reflections">
+          <button className="top-icon-btn -mr-2" title="Past reflections" onClick={() => setShowHistory(true)}>
             <Clock className="w-5 h-5" />
           </button>
         ) : (
@@ -144,8 +247,63 @@ const WhatDoINeedActivity = () => {
         )}
       </div>
 
+      {/* History Modal */}
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
+            <motion.div
+              className="relative w-full max-w-md rounded-t-3xl p-6 pb-10 max-h-[75vh] overflow-y-auto"
+              style={{ background: "hsl(30 25% 96%)" }}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-semibold text-foreground">📖 Past Reflections</h3>
+                <button onClick={() => setShowHistory(false)} className="top-icon-btn">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {history.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No reflections yet. Complete an activity to see your history here. 🌱
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {history.map((item, i) => (
+                    <div key={i} className="rounded-2xl p-4" style={{ background: "hsl(var(--card))" }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-foreground">
+                          {item.emoji} {item.primaryNeed}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{item.date}</span>
+                      </div>
+                      {item.reflection && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">"{item.reflection}"</p>
+                      )}
+                      {item.action && (
+                        <p className="text-xs mt-2" style={{ color: "hsl(var(--lavender))" }}>
+                          → {item.action}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Content */}
-      <div className="flex-1 flex flex-col px-6 pb-8 overflow-y-auto">
+      <div className="flex-1 flex flex-col px-5 pb-6 overflow-y-auto">
         <AnimatePresence mode="wait">
           {/* ===== SCREEN 1 ===== */}
           {screen === 1 && (
@@ -156,10 +314,10 @@ const WhatDoINeedActivity = () => {
               animate="animate"
               exit="exit"
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="flex-1 flex flex-col items-center justify-center text-center gap-6 max-w-sm mx-auto"
+              className="flex-1 flex flex-col items-center justify-center text-center gap-5"
             >
               <motion.div {...fadeUp} transition={{ delay: 0.05 }}>
-                <span className="text-4xl">🧘‍♀️</span>
+                <span className="text-5xl">🧘‍♀️</span>
               </motion.div>
 
               <motion.h1
@@ -171,24 +329,18 @@ const WhatDoINeedActivity = () => {
               </motion.h1>
 
               <motion.div
-                className="space-y-4 text-base text-muted-foreground leading-relaxed"
+                className="space-y-3 text-base text-muted-foreground leading-relaxed"
                 {...fadeUp}
                 transition={{ delay: 0.25 }}
               >
-                <p>
-                  Sometimes, we focus so much on everything around us that we lose track of what we need.
-                </p>
-                <p>
-                  This is a moment to pause and check in with yourself. 🌸
-                </p>
-                <p>
-                  Not to fix anything — just to understand what feels important right now.
-                </p>
+                <p>Sometimes, we focus so much on everything around us that we lose track of what we need.</p>
+                <p>This is a moment to pause and check in with yourself. 🌸</p>
+                <p>Not to fix anything — just to understand what feels important right now.</p>
               </motion.div>
 
               <motion.p
                 className="text-sm font-medium"
-                style={{ color: "hsl(262 30% 58%)" }}
+                style={{ color: "hsl(var(--lavender))" }}
                 {...fadeUp}
                 transition={{ delay: 0.4 }}
               >
@@ -212,7 +364,7 @@ const WhatDoINeedActivity = () => {
               animate="animate"
               exit="exit"
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="flex-1 flex flex-col items-center text-center gap-5 max-w-sm mx-auto pt-4"
+              className="flex-1 flex flex-col items-center text-center gap-5 pt-4"
             >
               <AnimatePresence mode="wait">
                 {step2Phase === "select" && (
@@ -220,7 +372,6 @@ const WhatDoINeedActivity = () => {
                     <h2 className="text-xl font-semibold text-foreground">
                       🌿 What feels important right now?
                     </h2>
-
                     <div className="flex flex-wrap justify-center gap-2.5">
                       {NEEDS.map((need) => (
                         <NeedChip
@@ -241,7 +392,6 @@ const WhatDoINeedActivity = () => {
                           />
                         ))}
                     </div>
-
                     <div className="flex items-center gap-2 justify-center">
                       <input
                         value={customNeed}
@@ -251,14 +401,12 @@ const WhatDoINeedActivity = () => {
                         className="input-calm !rounded-full !py-2.5 !text-sm w-48"
                       />
                       {customNeed.trim() && (
-                        <button onClick={addCustomNeed} className="text-sm font-medium" style={{ color: "hsl(262 30% 58%)" }}>
+                        <button onClick={addCustomNeed} className="text-sm font-medium" style={{ color: "hsl(var(--lavender))" }}>
                           + Add
                         </button>
                       )}
                     </div>
-
                     <MicroAcknowledgement message="✨ That makes sense." show={selectedNeeds.length > 0} />
-
                     {selectedNeeds.length > 0 && (
                       <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
                         <button onClick={goToPrioritize} className="btn-primary">
@@ -292,7 +440,6 @@ const WhatDoINeedActivity = () => {
                     <p className="text-sm text-muted-foreground uppercase tracking-wider font-medium">
                       ✦ Your focus right now
                     </p>
-
                     <motion.div
                       className="focus-card w-full"
                       initial={{ scale: 0.9, opacity: 0 }}
@@ -302,9 +449,7 @@ const WhatDoINeedActivity = () => {
                       <span className="text-3xl mb-3 block">{primaryEmoji}</span>
                       <p className="text-lg font-semibold text-foreground">{primaryNeed}</p>
                     </motion.div>
-
                     <MicroAcknowledgement message="🌱 Let's explore this a bit more." show />
-
                     <button onClick={goToScreen3} className="btn-primary mt-4">
                       Continue →
                     </button>
@@ -323,7 +468,7 @@ const WhatDoINeedActivity = () => {
               animate="animate"
               exit="exit"
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="flex-1 flex flex-col items-center text-center gap-5 max-w-sm mx-auto pt-4"
+              className="flex-1 flex flex-col items-center text-center gap-5 pt-4"
             >
               <AnimatePresence mode="wait">
                 {step3Phase === "reflect" && (
@@ -331,17 +476,14 @@ const WhatDoINeedActivity = () => {
                     <h2 className="text-xl font-semibold text-foreground">
                       {dynamicPrompt}
                     </h2>
-
                     <textarea
                       value={reflection}
                       onChange={(e) => setReflection(e.target.value)}
-                      placeholder="Take a moment to describe it... 🌸"
+                      placeholder={hints[placeholderIdx] + " 🌸"}
                       rows={3}
                       className="input-calm"
                     />
-
                     <MicroAcknowledgement message="💫 That's a meaningful insight." show={reflection.length > 10} />
-
                     {reflection.trim() && (
                       <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
                         <button onClick={goToAction} className="btn-primary">
@@ -357,7 +499,6 @@ const WhatDoINeedActivity = () => {
                     <h2 className="text-xl font-semibold text-foreground">
                       🌟 What's one small thing that might help?
                     </h2>
-
                     <div className="flex flex-wrap justify-center gap-2.5">
                       {ACTION_CHIPS.map((action) => (
                         <NeedChip
@@ -368,7 +509,6 @@ const WhatDoINeedActivity = () => {
                         />
                       ))}
                     </div>
-
                     <input
                       value={customAction}
                       onChange={(e) => {
@@ -378,7 +518,6 @@ const WhatDoINeedActivity = () => {
                       placeholder="✏️ Or write your own..."
                       className="input-calm !rounded-full !py-3 !text-sm"
                     />
-
                     {(selectedAction || customAction.trim()) && (
                       <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
                         <button onClick={goToClosing} className="btn-primary">
@@ -403,7 +542,6 @@ const WhatDoINeedActivity = () => {
                         <p className="text-lg font-semibold text-foreground">{primaryNeed}</p>
                       </div>
                     </motion.div>
-
                     <motion.p
                       className="text-base text-muted-foreground leading-relaxed"
                       initial={{ opacity: 0 }}
@@ -412,12 +550,11 @@ const WhatDoINeedActivity = () => {
                     >
                       🌿 Even noticing this is a meaningful step.
                     </motion.p>
-
                     <div className="w-full space-y-3 mt-4">
                       <button
-                        onClick={() => setSaved(true)}
+                        onClick={handleSave}
                         className={saved ? "btn-secondary !border-2" : "btn-primary"}
-                        style={saved ? { borderColor: "hsl(262 30% 58%)", color: "hsl(262 30% 58%)" } : {}}
+                        style={saved ? { borderColor: "hsl(var(--lavender))", color: "hsl(var(--lavender))" } : {}}
                       >
                         {saved ? "✅ Saved" : "💾 Save"}
                       </button>

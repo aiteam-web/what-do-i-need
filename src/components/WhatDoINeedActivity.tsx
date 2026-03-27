@@ -364,15 +364,15 @@ const WhatDoINeedActivity = () => {
               animate="animate"
               exit="exit"
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="flex-1 flex flex-col items-center text-center gap-5 pt-4"
+              className="flex-1 flex flex-col items-center text-center gap-5 pt-4 w-full"
             >
               <AnimatePresence mode="wait">
                 {step2Phase === "select" && (
-                  <motion.div key="s2-select" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5">
-                    <h2 className="text-xl font-semibold text-foreground">
+                  <motion.div key="s2-select" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5 flex flex-col items-center">
+                    <h2 className="text-xl font-semibold text-foreground text-center w-full">
                       🌿 What feels important right now?
                     </h2>
-                    <div className="flex flex-wrap justify-center gap-2.5">
+                    <div className="flex flex-wrap justify-center gap-2.5 w-full">
                       {NEEDS.map((need) => (
                         <NeedChip
                           key={need.label}
@@ -418,11 +418,11 @@ const WhatDoINeedActivity = () => {
                 )}
 
                 {step2Phase === "prioritize" && (
-                  <motion.div key="s2-prioritize" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5">
+                  <motion.div key="s2-prioritize" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5 flex flex-col items-center">
                     <h2 className="text-xl font-semibold text-foreground">
                       🎯 Which one feels most important right now?
                     </h2>
-                    <div className="flex flex-wrap justify-center gap-2.5">
+                    <div className="flex flex-wrap justify-center gap-2.5 w-full">
                       {selectedNeeds.map((need) => (
                         <NeedChip
                           key={need}
@@ -472,7 +472,7 @@ const WhatDoINeedActivity = () => {
             >
               <AnimatePresence mode="wait">
                 {step3Phase === "reflect" && (
-                  <motion.div key="s3-reflect" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5">
+                  <motion.div key="s3-reflect" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5 flex flex-col items-center">
                     <h2 className="text-xl font-semibold text-foreground">
                       {dynamicPrompt}
                     </h2>
@@ -495,7 +495,7 @@ const WhatDoINeedActivity = () => {
                 )}
 
                 {step3Phase === "action" && (
-                  <motion.div key="s3-action" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5">
+                  <motion.div key="s3-action" {...fadeUp} transition={{ duration: 0.4 }} className="w-full space-y-5 flex flex-col items-center">
                     <h2 className="text-xl font-semibold text-foreground">
                       🌟 What's one small thing that might help?
                     </h2>

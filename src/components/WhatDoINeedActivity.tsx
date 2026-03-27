@@ -408,7 +408,7 @@ const WhatDoINeedActivity = () => {
                     </div>
                     <MicroAcknowledgement message="✨ That makes sense." show={selectedNeeds.length > 0} />
                     {selectedNeeds.length > 0 && (
-                      <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
+                      <motion.div {...fadeUp} transition={{ delay: 0.2 }} className="w-full">
                         <button onClick={goToPrioritize} className="btn-primary">
                           Continue →
                         </button>

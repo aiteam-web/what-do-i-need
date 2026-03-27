@@ -480,8 +480,8 @@ const WhatDoINeedActivity = () => {
                       value={reflection}
                       onChange={(e) => setReflection(e.target.value)}
                       placeholder={hints[placeholderIdx] + " 🌸"}
-                      rows={3}
-                      className="input-calm"
+                      rows={6}
+                      className="input-calm !min-h-[160px] !rounded-2xl !text-base !leading-relaxed"
                     />
                     <MicroAcknowledgement message="💫 That's a meaningful insight." show={reflection.length > 10} />
                     {reflection.trim() && (
@@ -542,14 +542,19 @@ const WhatDoINeedActivity = () => {
                         <p className="text-lg font-semibold text-foreground">{primaryNeed}</p>
                       </div>
                     </motion.div>
-                    <motion.p
-                      className="text-base text-muted-foreground leading-relaxed"
+                    <motion.div
+                      className="space-y-3 text-center"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.4 }}
                     >
-                      🌿 Even noticing this is a meaningful step.
-                    </motion.p>
+                      <p className="text-base text-muted-foreground leading-relaxed">
+                        🌿 Even noticing this is a meaningful step.
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        You paused, checked in with yourself, and named what matters to you right now — that takes real self-awareness. Whatever comes next, you're already moving in the right direction. 💛
+                      </p>
+                    </motion.div>
                     <div className="w-full space-y-3 mt-4">
                       <button
                         onClick={handleSave}

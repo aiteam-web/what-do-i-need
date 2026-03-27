@@ -1,4 +1,3 @@
-import { forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface MicroAckProps {
@@ -6,8 +5,8 @@ interface MicroAckProps {
   show: boolean;
 }
 
-const MicroAcknowledgement = forwardRef<HTMLParagraphElement, MicroAckProps>(
-  ({ message, show }, _ref) => (
+const MicroAcknowledgement = ({ message, show }: MicroAckProps) => {
+  return (
     <AnimatePresence>
       {show && (
         <motion.p
@@ -21,9 +20,7 @@ const MicroAcknowledgement = forwardRef<HTMLParagraphElement, MicroAckProps>(
         </motion.p>
       )}
     </AnimatePresence>
-  )
-);
-
-MicroAcknowledgement.displayName = "MicroAcknowledgement";
+  );
+};
 
 export default MicroAcknowledgement;
